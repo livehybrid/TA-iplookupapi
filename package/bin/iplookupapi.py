@@ -5,7 +5,7 @@ import requests
 def get_ip_location(ip):
     response = requests.get(f"https://freeipapi.com/api/json/{ip}", verify=True)
     data = response.json()
-    return data['countryName']
+    return data
 
 if __name__ == '__main__':
     try:
@@ -17,7 +17,7 @@ if __name__ == '__main__':
         results,dummyresults,settings = si.getOrganizedResults()
 
         for result in results:
-                result['Country'] = get_ip_location(result[ip])
+                result.update(get_ip_location(result[ip]))
         si.outputResults(results)
     except Exception as e:
         import traceback
