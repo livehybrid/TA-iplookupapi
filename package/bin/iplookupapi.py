@@ -3,9 +3,7 @@ import splunk.Intersplunk as si
 import requests
 
 def get_ip_location(ip):
-    url = f"https://freeipapi.com/api/json/{ip}"
-
-    response = requests.get(url)
+    response = requests.get(f"https://freeipapi.com/api/json/{ip}", verify=True)
     data = response.json()
     return data['countryName']
 
