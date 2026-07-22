@@ -4,7 +4,8 @@
         "restRoot": "TA-ipllookupapi",
         "version": "1.0.0",
         "displayName": "IP Lookup API",
-        "schemaVersion": "0.0.3"
+        "schemaVersion": "0.0.3",
+        "supportedPythonVersion": ["3.9"]
     },
     "pages": {
         "configuration": {
