@@ -1,8 +1,8 @@
-# Local docker loop for the TA-ipllookupapi integration suite.
+# Local docker loop for the TA-iplookupapi integration suite.
 # Requires a Docker engine on THIS host. If you don't have one, prefer
 # `run_local.py --backend live` against a reachable Splunk instead.
 
-APP := TA-ipllookupapi
+APP := TA-iplookupapi
 VERSION ?= 1.0.0
 
 .PHONY: build up test down logs cycle
@@ -20,7 +20,7 @@ up:  ## start Splunk and wait for health
 
 test:  ## run the suite against the running container
 	cd .. && SPLUNK_MGMT_URL=https://127.0.0.1:8089 SPLUNK_USER=admin \
-		SPLUNK_PASSWORD=Changeme1! SPLUNK_CONTAINER=ta_ipllookupapi_splunk \
+		SPLUNK_PASSWORD=Changeme1! SPLUNK_CONTAINER=ta_iplookupapi_splunk \
 		pytest tests/ -v -ra
 
 down:  ## stop and remove the container + volumes
@@ -28,6 +28,6 @@ down:  ## stop and remove the container + volumes
 
 logs:  ## tail splunkd on failure
 	docker compose logs --tail 300 splunk || true
-	docker exec ta_ipllookupapi_splunk tail -n 300 /opt/splunk/var/log/splunk/splunkd.log || true
+	docker exec ta_iplookupapi_splunk tail -n 300 /opt/splunk/var/log/splunk/splunkd.log || true
 
 cycle: build up test down  ## full local loop

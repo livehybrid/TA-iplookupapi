@@ -14,7 +14,7 @@ import json
 
 import pytest
 
-APP = "TA-ipllookupapi"
+APP = "TA-iplookupapi"
 INPUTS = ()  # e.g. ("carbon_intensity", "nhs_ae")
 
 

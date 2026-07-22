@@ -1,7 +1,7 @@
 {
     "meta": {
-        "name": "TA-ipllookupapi",
-        "restRoot": "TA-ipllookupapi",
+        "name": "TA-iplookupapi",
+        "restRoot": "TA-iplookupapi",
         "version": "1.0.0",
         "displayName": "IP Lookup API",
         "schemaVersion": "0.0.3",

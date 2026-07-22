@@ -5,7 +5,7 @@
     "title": "IP Lookup API",
     "id": {
       "group": null,
-      "name": "TA-ipllookupapi",
+      "name": "TA-iplookupapi",
       "version": "1.0.0"
     },
     "author": [

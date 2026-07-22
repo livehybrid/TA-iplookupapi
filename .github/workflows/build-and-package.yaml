@@ -55,12 +55,12 @@ jobs:
         run: |
           ucc-gen build --source package --ta-version 1.0.0
           rm -rf stage && mkdir -p stage
-          cp -r output/TA-ipllookupapi stage/TA-ipllookupapi
+          cp -r output/TA-iplookupapi stage/TA-iplookupapi
           # Point the command at the mock freeipapi via the app-local override
           # file (search-command processes do not reliably inherit the env var).
-          mkdir -p stage/TA-ipllookupapi/local
-          echo "http://mock:8080" > stage/TA-ipllookupapi/local/freeipapi_base
-          chmod -R 777 stage/TA-ipllookupapi
+          mkdir -p stage/TA-iplookupapi/local
+          echo "http://mock:8080" > stage/TA-iplookupapi/local/freeipapi_base
+          chmod -R 777 stage/TA-iplookupapi
 
       - name: Start Splunk (wait for health)
         working-directory: docker
@@ -71,14 +71,14 @@ jobs:
           SPLUNK_MGMT_URL: https://127.0.0.1:8089
           SPLUNK_USER: admin
           SPLUNK_PASSWORD: Changeme1!
-          SPLUNK_CONTAINER: ta_ipllookupapi_splunk
+          SPLUNK_CONTAINER: ta_iplookupapi_splunk
         run: pytest tests/ -v -ra
 
       - name: Diagnostics on failure
         if: failure()
         working-directory: docker
         run: |
-          docker exec ta_ipllookupapi_splunk /opt/splunk/bin/splunk search \
+          docker exec ta_iplookupapi_splunk /opt/splunk/bin/splunk search \
             'search index=_internal (source=*iplookupapi* OR component=ChunkedExternProcessor OR component=SearchProcessor) earliest=-15m | head 25 | table _time component _raw' \
             -auth admin:Changeme1! 2>&1 | head -40 || true
           docker compose logs --tail 40 mock || true

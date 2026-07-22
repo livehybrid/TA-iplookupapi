@@ -1,5 +1,5 @@
 """
-Shared fixtures for the TA-ipllookupapi integration suite.
+Shared fixtures for the TA-iplookupapi integration suite.
 
 Backend-agnostic: everything talks to the Splunk management API over stdlib
 urllib, so the only dependency is pytest and the suite runs unchanged against
@@ -10,7 +10,7 @@ Environment (defaults suit the docker harness):
   SPLUNK_MGMT_URL   management API base   (default https://127.0.0.1:8089)
   SPLUNK_USER       admin user            (default admin)
   SPLUNK_PASSWORD   admin password        (default Changeme1!)
-  SPLUNK_CONTAINER  container name for     (default ta_ipllookupapi_splunk)
+  SPLUNK_CONTAINER  container name for     (default ta_iplookupapi_splunk)
                     `docker exec` smokes  (unused off the docker backend)
 """
 from __future__ import annotations
@@ -30,8 +30,8 @@ import pytest
 MGMT = os.environ.get("SPLUNK_MGMT_URL", "https://127.0.0.1:8089").rstrip("/")
 USER = os.environ.get("SPLUNK_USER", "admin")
 PW = os.environ.get("SPLUNK_PASSWORD", "Changeme1!")
-CONTAINER = os.environ.get("SPLUNK_CONTAINER", "ta_ipllookupapi_splunk")
-APP = "TA-ipllookupapi"
+CONTAINER = os.environ.get("SPLUNK_CONTAINER", "ta_iplookupapi_splunk")
+APP = "TA-iplookupapi"
 
 _CTX = ssl.create_default_context()
 _CTX.check_hostname = False

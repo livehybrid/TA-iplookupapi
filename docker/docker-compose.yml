@@ -1,7 +1,7 @@
 services:
   splunk:
     image: splunk/splunk:10.0
-    container_name: ta_ipllookupapi_splunk
+    container_name: ta_iplookupapi_splunk
     hostname: splunk
     environment:
       SPLUNK_START_ARGS: --accept-license
@@ -17,7 +17,7 @@ services:
       # The built add-on is bind-mounted live from ../stage so a rebuild on the
       # host updates the running container. The stage/ copy is a throwaway test
       # build (widened perms), never the packaged artefact.
-      - ../stage/TA-ipllookupapi:/opt/splunk/etc/apps/TA-ipllookupapi
+      - ../stage/TA-iplookupapi:/opt/splunk/etc/apps/TA-iplookupapi
     depends_on:
       mock:
         condition: service_healthy
@@ -33,7 +33,7 @@ services:
     # command reaches it via the local/freeipapi_base override file written into
     # stage/ in the CI build step.
     build: ./mock
-    container_name: ta_ipllookupapi_mock
+    container_name: ta_iplookupapi_mock
     hostname: mock
     expose:
       - "8080"
