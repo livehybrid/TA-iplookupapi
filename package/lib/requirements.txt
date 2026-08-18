@@ -1,0 +1,10 @@
+# Runtime dependencies vendored into package/lib/ by ucc-gen at build time.
+# Pinned for Splunk's Python 3.9 LTS runtime:
+#   - splunktaucclib >= 8.2.0 : floor required by ucc-gen 6.5.2 (the app has a
+#     config UI / REST handler).
+#   - splunk-sdk < 3.0.0 : provides splunklib (searchcommands); 3.0.0 is py>=3.13.
+#   - requests   < 2.33.0 : 2.33.0+ needs py>=3.10 and 2.34.0 breaks import on 3.9.
+splunktaucclib>=8.2.0
+solnlib>=5.5.0
+splunk-sdk>=2.0.2,<3.0.0
+requests>=2.32.0,<2.33.0
