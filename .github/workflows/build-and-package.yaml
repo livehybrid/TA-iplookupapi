@@ -46,6 +46,12 @@ jobs:
     needs: package
     if: github.actor != 'dependabot[bot]'
     runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        # 10.0 is the oldest Splunk this add-on is tested on; 10.6.0 is current
+        # (Postgres-backed KV store, Python 3.13 alongside 3.9).
+        splunk: ["10.0", "10.6.0"]
     steps:
       - uses: actions/checkout@v7
       - uses: actions/setup-python@v7
@@ -69,6 +75,8 @@ jobs:
 
       - name: Start Splunk (wait for health)
         working-directory: docker
+        env:
+          SPLUNK_IMAGE_TAG: ${{ matrix.splunk }}
         run: docker compose up -d --wait --wait-timeout 360
 
       - name: Run integration suite
