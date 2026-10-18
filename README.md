@@ -24,13 +24,19 @@ index=firewall | iplookupapi src_ip | stats count by countryName
 
 | Attribute | Value |
 |-----------|-------|
-| **Python runtime** | 3.9, Splunk's long-term-support runtime (pinned) |
-| **Expected compatible** | Splunk Enterprise and Cloud 9.3+ and 10.x (any release on the Python 3.9 runtime) |
+| **Python runtime** | 3.13 on Splunk 10.2 and later, 3.9 on Splunk 10.1 and earlier |
+| **Expected compatible** | Splunk Enterprise and Cloud 9.3+ and 10.x |
 | **Tested in CI** | Real-Splunk harness runs the command end-to-end against a mock upstream + AppInspect `cloud`, `future`, `private_victoria` on every push |
 | **Command protocol** | `splunklib.searchcommands` (v2 chunked) |
 
 The command is implemented with `splunklib.searchcommands` (the modern chunked
 protocol, replacing the deprecated `splunk.Intersplunk` API). Its dependencies
 (`splunklib`, `requests`) are vendored and pinned to versions that stay
-3.9-clean. `python.required = 3.9` is set on the command. It is not yet validated
-on the opt-in Python 3.13 runtime introduced in Splunk 10.2.
+3.9-clean.
+
+Splunk 10.2 and later ship Python 3.9 and 3.13 side by side; this add-on sets
+`python.required = 3.13`, so it runs on 3.13 there. Splunk 10.1 and earlier
+ignore `python.required` and run it on 3.9 (`python.version = python3`), so the
+code and vendored libraries stay 3.9-compatible (`requests < 2.33`,
+`splunk-sdk < 3`). CI runs the integration tests on Splunk 10.0 (Python 3.9)
+and 10.6 (Python 3.13) to hold both.
