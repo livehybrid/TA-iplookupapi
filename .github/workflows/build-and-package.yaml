@@ -112,6 +112,55 @@ jobs:
         working-directory: docker
         run: docker compose down -v || true
 
+  live-real-api:
+    name: live-real-api (real freeipapi)
+    # Real-API canary: the command against the real free endpoint, structure
+    # only. NON-gating (publish does not need it) and keyless; runs on the
+    # weekly schedule, manual dispatch, main pushes and tags.
+    if: >-
+      ${{ github.actor != 'dependabot[bot]' &&
+          (github.event_name == 'schedule' ||
+           github.event_name == 'workflow_dispatch' ||
+           github.ref == 'refs/heads/main' ||
+           startsWith(github.ref, 'refs/tags/')) }}
+    needs: package
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-python@v7
+        with:
+          python-version: "3.11"
+
+      - name: Install UCC framework + pytest
+        run: pip install --upgrade splunk-add-on-ucc-framework pytest
+
+      - name: Build add-on into stage/ (no override, so the real API)
+        shell: bash
+        run: |
+          ucc-gen build --source package --ta-version 1.0.0
+          mkdir -p stage
+          cp -r output/TA-iplookupapi stage/TA-iplookupapi
+          chmod -R 777 stage/TA-iplookupapi
+
+      - name: Start Splunk (wait for health)
+        working-directory: docker
+        env:
+          SPLUNK_IMAGE_TAG: "10.6.0"
+        run: docker compose up -d --wait --wait-timeout 360
+
+      - name: Run real-API canary
+        env:
+          SPLUNK_MGMT_URL: https://127.0.0.1:8089
+          SPLUNK_USER: admin
+          SPLUNK_PASSWORD: Changeme1!
+          IPLOOKUP_LIVE_CANARY: "1"
+        run: pytest tests/test_live_real.py -v -ra
+
+      - name: Tear down
+        if: always()
+        working-directory: docker
+        run: docker compose down -v || true
+
   publish-gh:
     permissions:
       contents: write

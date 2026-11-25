@@ -35,5 +35,6 @@ services:
     build: ./mock
     container_name: ta_iplookupapi_mock
     hostname: mock
-    expose:
-      - "8080"
+    ports:
+      # Published so the suite can drive /_mock/scenario and read /_mock/requests.
+      - "8080:8080"

@@ -15,8 +15,9 @@ import sys
 
 sys.path.insert(0, os.path.join(os.path.dirname(os.path.realpath(__file__)), os.pardir, "lib"))
 
-import requests
 from splunklib.searchcommands import dispatch, StreamingCommand, Configuration
+
+from iplookup_client import DEFAULT_BASE, Lookup
 
 
 def _resolve_api_base():
@@ -28,7 +29,8 @@ def _resolve_api_base():
       2. a `local/freeipapi_base` file in the app (the integration harness writes
          this to point the command at a mock upstream — search-command processes
          do not reliably inherit the container env).
-      3. the real freeipapi.com API.
+      3. the real freeipapi.com API (free.freeipapi.com, where freeipapi.com
+         redirects keyless lookups).
     """
     env = os.environ.get("FREEIPAPI_BASE")
     if env:
@@ -41,29 +43,35 @@ def _resolve_api_base():
             return val.rstrip("/")
     except OSError:
         pass
-    return "https://freeipapi.com"
+    return DEFAULT_BASE
 
 
 FREEIPAPI_BASE = _resolve_api_base()
 
 
-def get_ip_location(ip):
-    resp = requests.get(f"{FREEIPAPI_BASE}/api/json/{ip}", timeout=30, verify=True)
-    resp.raise_for_status()
-    return resp.json()
-
-
 @Configuration()
 class IpLookupApiCommand(StreamingCommand):
+    """Merge freeipapi fields into each record; never drop or fail a record.
+
+    One upstream call per distinct public IP per search. Empty values are left
+    alone; invalid, private and multivalue values, upstream errors and rate
+    limiting set iplookupapi_error instead of geolocation fields.
+    """
+
     def stream(self, records):
         field = self.fieldnames[0] if self.fieldnames else None
+        # stream() runs once per chunk of records, in one process per search,
+        # so the cache and the rate-limit stop are kept on the command.
+        lookup = getattr(self, "_lookup", None)
+        if lookup is None:
+            lookup = self._lookup = Lookup(FREEIPAPI_BASE)
         for record in records:
             try:
-                value = record.get(field) if field else None
-                if value:
-                    data = get_ip_location(value)
-                    if isinstance(data, dict):
-                        record.update({str(k): v for k, v in data.items()})
+                data, error = lookup.lookup(record.get(field) if field else None)
+                if data:
+                    record.update(data)
+                if error:
+                    record["iplookupapi_error"] = error
             except Exception as exc:  # never drop the record on a lookup failure
                 record["iplookupapi_error"] = str(exc)
             yield record
