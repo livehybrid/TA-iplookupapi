@@ -149,6 +149,22 @@ def test_invalid_private_and_empty_values_are_not_looked_up(splunk, mock):
     assert calls == [], f"the upstream was called for values that must not be sent: {calls}"
 
 
+@pytest.mark.parametrize("first", ["10.0.0.1", "", "notanip"])
+def test_an_unenriched_first_event_does_not_hide_later_fields(splunk, mock, first):
+    # The output header of a chunk used to come from its first record only.
+    out = _csv_search(splunk, [(1, first), (2, "8.8.8.8"), (3, "1.1.1.1")])
+    _assert_not_enriched(out["1"])
+    _assert_enriched(out["2"], "8.8.8.8")
+    _assert_enriched(out["3"], "1.1.1.1")
+
+
+def test_an_enriched_first_event_does_not_hide_later_errors(splunk, mock):
+    out = _csv_search(splunk, [(1, "8.8.8.8"), (2, "10.0.0.1"), (3, "notanip")])
+    _assert_enriched(out["1"], "8.8.8.8")
+    assert out["2"].get("iplookupapi_error") == ERR_NOT_PUBLIC, out["2"]
+    assert out["3"].get("iplookupapi_error") == ERR_INVALID, out["3"]
+
+
 def test_upstream_errors_are_per_event_and_do_not_kill_the_search(splunk, mock):
     mock("/_mock/scenario", {"status": {"1.0.0.1": 500, "1.0.0.2": 404, "1.0.0.3": 503}})
     rows = [(1, "1.0.0.1"), (2, "8.8.8.8"), (3, "1.0.0.2"), (4, "1.0.0.3"), (5, "1.1.1.1"), (6, "1.0.0.1")]

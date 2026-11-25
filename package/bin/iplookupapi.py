@@ -65,6 +65,7 @@ class IpLookupApiCommand(StreamingCommand):
         lookup = getattr(self, "_lookup", None)
         if lookup is None:
             lookup = self._lookup = Lookup(FREEIPAPI_BASE)
+        out = []
         for record in records:
             try:
                 data, error = lookup.lookup(record.get(field) if field else None)
@@ -74,6 +75,21 @@ class IpLookupApiCommand(StreamingCommand):
                     record["iplookupapi_error"] = error
             except Exception as exc:  # never drop the record on a lookup failure
                 record["iplookupapi_error"] = str(exc)
+            out.append(record)
+        # splunklib writes each chunk's header from the FIRST record's fields
+        # plus the fields registered through add_field by then, and silently
+        # drops any other field. Yielding as we go therefore lost every
+        # geolocation field when the first event was not enriched (empty,
+        # private, an upstream error) and every iplookupapi_error when it was.
+        # So the chunk is looked up first and every field is registered before
+        # the first record is written.
+        seen = set()
+        for record in out:
+            for name in list(record):
+                if name not in seen:
+                    seen.add(name)
+                    self.add_field(record, name, record[name])
+        for record in out:
             yield record
 
 
